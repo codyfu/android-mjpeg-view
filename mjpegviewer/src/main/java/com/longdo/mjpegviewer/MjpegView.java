@@ -35,6 +35,8 @@ public class MjpegView extends View{
 
     private Context context;
     private String url;
+    private String username;
+    private String password;
     private Bitmap lastBitmap;
     private MjpegDownloader downloader;
     private final Object lockBitmap = new Object();
@@ -72,8 +74,16 @@ public class MjpegView extends View{
 
     public void setUrl(String url){
         this.url = url;
+        this.username = "";
+        this.password = "";
     }
 
+    public void setUrl(String url, String user, String pass) {
+        this.url = url;
+        this.username = user;
+        this.password = pass;
+    }
+    
     public void startStream(){
         if(downloader != null && downloader.isRunning()){
             Log.w(tag,"Already started, stop by calling stopStream() first.");
@@ -319,6 +329,12 @@ public class MjpegView extends View{
                 try {
                     serverUrl = new URL(url);
 
+                    if(username != "") {
+                        String auth_string = username + ":" + password;
+                        String encoded = Base64.getEncoder().encodeToString(auth_string.getBytes(StandardCharsets.UTF_8));
+                        connection.setRequestProperty("Authorization", "Basic " + encoded);
+                    }
+                    
                     connection = (HttpURLConnection) serverUrl.openConnection();
                     connection.setDoInput(true);
                     connection.connect();
